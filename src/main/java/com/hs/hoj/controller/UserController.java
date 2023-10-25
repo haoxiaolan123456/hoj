@@ -49,7 +49,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/user")
 @Slf4j
-@Api(tags = "用户相关的接口")
 public class UserController {
 
     @Resource
@@ -67,7 +66,6 @@ public class UserController {
      * @return
      */
     @PostMapping("/register")
-    @ApiOperation("用户注册接口")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
