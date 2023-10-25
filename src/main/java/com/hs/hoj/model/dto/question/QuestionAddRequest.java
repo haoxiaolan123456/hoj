@@ -1,16 +1,14 @@
 package com.hs.hoj.model.dto.question;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
+
 import java.util.List;
 
 /**
  * 创建请求
- *
  */
 @Data
 public class QuestionAddRequest implements Serializable {
@@ -35,7 +33,6 @@ public class QuestionAddRequest implements Serializable {
     private List<String> tags;
 
     /**
-     *
      * 判题用例 json数组
      */
     private List<JudegCase> judgeCase;
