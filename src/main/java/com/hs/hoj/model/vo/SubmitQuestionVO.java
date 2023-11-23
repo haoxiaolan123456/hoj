@@ -39,6 +39,11 @@ public class SubmitQuestionVO implements Serializable {
     private String language;
 
     /**
+     * 标题
+     */
+    private String title;
+
+    /**
      * 判题状态状态
      */
     private Integer status;

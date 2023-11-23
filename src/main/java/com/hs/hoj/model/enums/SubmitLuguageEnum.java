@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public enum SubmitLuguageEnum {
 
     JAVA("java", "java"),
-    CPLUSPLUS("c++", "c++");
+    CPLUSPLUS("cpp", "cpp");
 
     private final String text;
 

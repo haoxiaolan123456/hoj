@@ -44,7 +44,7 @@ public interface SubmitQuestionService extends IService<SubmitQuestion> {
     /**
      * 获取題目封装
      * @param submitQuestion
-     * @param request
+     * @param
      * @return
      */
     SubmitQuestionVO getSubmitQuestionVO(SubmitQuestion submitQuestion, User loginuser);
@@ -52,7 +52,7 @@ public interface SubmitQuestionService extends IService<SubmitQuestion> {
     /**
      * 分页获取題目封装
      * @param SubmitQuestionPage
-     * @param request
+     * @param
      * @return
      */
     Page<SubmitQuestionVO> getSubmitQuestionVOPage(Page<SubmitQuestion> SubmitQuestionPage, User loginuser);

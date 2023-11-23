@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hs.hoj.common.ErrorCode;
 import com.hs.hoj.constant.CommonConstant;
 import com.hs.hoj.exception.BusinessException;
+import com.hs.hoj.judge.judgeSevice.JudgeService;
 import com.hs.hoj.model.dto.question.QuestionQueryRequest;
 import com.hs.hoj.model.dto.submitquestion.SubmitQuestionQueryRequest;
 import com.hs.hoj.model.dto.submitquestion.SubmitQuestionRequest;
@@ -27,12 +28,14 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -50,6 +53,10 @@ public class SubmitQuestionServiceImpl extends ServiceImpl<SubmitQuestionMapper,
     @Autowired
     private UserService userService;
 
+    @Autowired
+    @Lazy
+    private JudgeService judgeService;
+
     /**
      * 題目提交
      *
@@ -61,8 +68,8 @@ public class SubmitQuestionServiceImpl extends ServiceImpl<SubmitQuestionMapper,
     public Long SubmitQuestion(SubmitQuestionRequest submitQuestionRequest, User loginUser) {
         String language = submitQuestionRequest.getLanguage();
         SubmitLuguageEnum enumByValue = SubmitLuguageEnum.getEnumByValue(language);
-        if (enumByValue == null){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"编程语言错误");
+        if (enumByValue == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "编程语言错误");
         }
 
 
@@ -86,16 +93,20 @@ public class SubmitQuestionServiceImpl extends ServiceImpl<SubmitQuestionMapper,
         submitQuestion.setStatus(SubmitStatueEnum.WAUTTING.getValue());
         submitQuestion.setJudgeInfo("{}");
         boolean save = save(submitQuestion);
-        if (!save){
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"提交失败");
+        if (!save) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "提交失败");
         }
-        return submitQuestion.getQuestionId();
-    }
+        Long submitQuestionId = submitQuestion.getId();
 
+        //判题服务
+        judgeService.doJudge(submitQuestionId);
+        return submitQuestionId;
+    }
 
 
     /**
      * 获取查询包装类
+     *
      * @param submitQuestionQueryRequest
      * @return
      */
@@ -118,7 +129,7 @@ public class SubmitQuestionServiceImpl extends ServiceImpl<SubmitQuestionMapper,
         queryWrapper.eq(ObjectUtils.isNotEmpty(status), "status", status);
         queryWrapper.eq(ObjectUtils.isNotEmpty(questionId), "questionId", questionId);
         queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
-        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_DESC),
                 sortField);
         return queryWrapper;
     }
@@ -130,7 +141,7 @@ public class SubmitQuestionServiceImpl extends ServiceImpl<SubmitQuestionMapper,
         // 1. 关联查询用户信息
         Long userId = submitQuestion.getUserId();
         //权限判断
-        if (userId != loginuser.getId() ||  !userService.isAdmin(loginuser)){
+        if (userId != loginuser.getId() || !userService.isAdmin(loginuser)) {
             submitQuestionVO.setCode(null);
         }
         submitQuestionVO.setUserId(userId);
@@ -157,12 +168,11 @@ public class SubmitQuestionServiceImpl extends ServiceImpl<SubmitQuestionMapper,
                 user = userIdUserListMap.get(userId).get(0);
             }
             questionVO.setUser(userService.getUserVO(user));*/
-            return this.getSubmitQuestionVO(submitquestion,loginuser);
+            return this.getSubmitQuestionVO(submitquestion, loginuser);
         }).collect(Collectors.toList());
         submitQuestionVOPage.setRecords(submitQuestionVOList);
         return submitQuestionVOPage;
     }
-
 
 
     /**

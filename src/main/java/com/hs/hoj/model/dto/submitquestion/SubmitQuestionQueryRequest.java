@@ -32,5 +32,8 @@ public class SubmitQuestionQueryRequest extends PageRequest implements Serializa
     private Long userId;
 
 
+    private String sortField;
+
+
     private static final long serialVersionUID = 1L;
 }

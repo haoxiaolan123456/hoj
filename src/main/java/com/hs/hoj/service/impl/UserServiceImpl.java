@@ -89,8 +89,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (userAccount.length() < 4) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号错误");
         }
-        if (userPassword.length() < 8) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
+        if (userPassword.length() < 6) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码长度过短");
         }
         // 2. 加密
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
@@ -268,5 +268,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField);
         return queryWrapper;
+    }
+
+    @Override
+    public boolean saveUser(User user) {
+        String userPassword = user.getUserPassword();
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+        user.setUserPassword(encryptPassword);
+        boolean save = save(user);
+        return save;
     }
 }

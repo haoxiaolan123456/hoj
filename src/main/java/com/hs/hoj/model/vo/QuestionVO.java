@@ -46,33 +46,44 @@ public class QuestionVO implements Serializable {
     /**
      * 题目提交数
      */
-    private Integer submitnum;
+    private Integer submitNum;
 
     /**
      * 题目通过数
      */
-    private Integer acceptednum;
+    private Integer acceptedNum;
+
+    /**
+     * 题目答案
+     */
+    private String answer;
+
+    /**
+     *
+     * 判题用例 json数组
+     */
+    private String judgeCase;
 
 
     /**
      * 判题配置 json数组
      */
-    private JudegConfig judgeconfig;
+    private JudegConfig judgeConfig;
 
     /**
      * 创建用户 id
      */
-    private Long userid;
+    private Long userId;
 
     /**
      * 创建时间
      */
-    private Date createtime;
+    private Date createTime;
 
     /**
      * 更新时间
      */
-    private Date updatetime;
+    private Date updateTime;
 
 
     private UserVO user;
@@ -98,7 +109,7 @@ public class QuestionVO implements Serializable {
         if (tagList != null) {
             question.setTags(JSONUtil.toJsonStr(tagList));
         }
-        JudegConfig judegConfigvo = questionVO.getJudgeconfig();
+        JudegConfig judegConfigvo = questionVO.getJudgeConfig();
         if (judegConfigvo != null){
             question.setJudgeConfig(JSONUtil.toJsonStr(judegConfigvo));
         }
@@ -125,7 +136,7 @@ public class QuestionVO implements Serializable {
         questionVO.setTags(tagslist);
 
         JudegConfig judegConfig = JSONUtil.toBean(judgeConfig, JudegConfig.class);
-        questionVO.setJudgeconfig(judegConfig);
+        questionVO.setJudgeConfig(judegConfig);
         return questionVO;
     }
 

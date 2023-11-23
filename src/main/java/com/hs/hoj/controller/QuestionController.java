@@ -12,14 +12,21 @@ import com.hs.hoj.constant.UserConstant;
 import com.hs.hoj.exception.BusinessException;
 import com.hs.hoj.exception.ThrowUtils;
 import com.hs.hoj.model.dto.question.*;
+import com.hs.hoj.model.dto.submitquestion.SubmitQuestionQueryRequest;
+import com.hs.hoj.model.dto.submitquestion.SubmitQuestionRequest;
 import com.hs.hoj.model.entity.Question;
+import com.hs.hoj.model.entity.SubmitQuestion;
 import com.hs.hoj.model.entity.User;
 import com.hs.hoj.model.vo.QuestionVO;
+import com.hs.hoj.model.vo.SubmitQuestionVO;
 import com.hs.hoj.service.QuestionService;
+import com.hs.hoj.service.SubmitQuestionService;
 import com.hs.hoj.service.UserService;
+
 import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +50,9 @@ public class QuestionController {
     private QuestionService questionService;
 
     @Resource
+    private SubmitQuestionService submitQuestionService;
+
+    @Resource
     private UserService userService;
 
     private final static Gson GSON = new Gson();
@@ -51,6 +61,7 @@ public class QuestionController {
 
     /**
      * 创建
+     *
      * @param questionAddRequest
      * @param request
      * @return
@@ -71,11 +82,11 @@ public class QuestionController {
 
         List<JudegCase> judgeCase = questionAddRequest.getJudgeCase();
 
-        if (judgeCase != null){
-            question.setJudgecase(JSONUtil.toJsonStr(judgeCase));
+        if (judgeCase != null) {
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
         }
         JudegConfig judgeConfig = questionAddRequest.getJudgeConfig();
-        if (judgeConfig != null){
+        if (judgeConfig != null) {
             question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
         }
         User loginUser = userService.getLoginUser(request);
@@ -133,11 +144,11 @@ public class QuestionController {
         }
         List<JudegCase> judgeCase = questionUpdateRequest.getJudgeCase();
 
-        if (judgeCase != null){
-            question.setJudgecase(JSONUtil.toJsonStr(judgeCase));
+        if (judgeCase != null) {
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
         }
         JudegConfig judgeConfig = questionUpdateRequest.getJudgeConfig();
-        if (judgeConfig != null){
+        if (judgeConfig != null) {
             question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
         }
         // 参数校验
@@ -152,6 +163,7 @@ public class QuestionController {
 
     /**
      * 根据 id 获取
+     *
      * @param id
      * @return
      */
@@ -167,6 +179,29 @@ public class QuestionController {
         return ResultUtils.success(questionService.getQuestionVO(question, request));
     }
 
+
+    /**
+     * 根据 id 获取
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/get")
+    public BaseResponse<Question> getQuestionById(long id, HttpServletRequest request) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Question question = questionService.getById(id);
+        if (question == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        if (question.getUserId ().equals(loginUser.getId()) && !userService.isAdmin(loginUser)){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        return ResultUtils.success(question);
+    }
+
     /**
      * 分页获取列表（封装类）
      *
@@ -176,7 +211,9 @@ public class QuestionController {
      */
     @PostMapping("/list/page/vo")
     public BaseResponse<Page<QuestionVO>> listQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
-                                                       HttpServletRequest request) {
+                                                               HttpServletRequest request) {
+
+        System.out.println(questionQueryRequest);
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
         // 限制爬虫
@@ -195,7 +232,7 @@ public class QuestionController {
      */
     @PostMapping("/my/list/page/vo")
     public BaseResponse<Page<QuestionVO>> listMyQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
-                                                         HttpServletRequest request) {
+                                                                 HttpServletRequest request) {
         if (questionQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -235,11 +272,11 @@ public class QuestionController {
 
         List<JudegCase> judgeCase = questionEditRequest.getJudgeCase();
 
-        if (judgeCase != null){
-            question.setJudgecase(JSONUtil.toJsonStr(judgeCase));
+        if (judgeCase != null) {
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
         }
         JudegConfig judgeConfig = questionEditRequest.getJudgeConfig();
-        if (judgeConfig != null){
+        if (judgeConfig != null) {
             question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
         }
 
@@ -253,5 +290,47 @@ public class QuestionController {
         boolean result = questionService.updateById(question);
         return ResultUtils.success(result);
     }
+
+
+    /**
+     * 提交題目
+     *
+     * @param submitQuestionRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/submit_question")
+    public BaseResponse<Long> SubmitQuestion(@RequestBody SubmitQuestionRequest submitQuestionRequest,
+                                             HttpServletRequest request) {
+        if (submitQuestionRequest == null || submitQuestionRequest.getQuestionId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        final User loginUser = userService.getLoginUser(request);
+        Long result = submitQuestionService.SubmitQuestion(submitQuestionRequest, loginUser);
+        return ResultUtils.success(result);
+    }
+
+
+    @PostMapping("/submit_question/list/page")
+    public BaseResponse<Page<SubmitQuestionVO>> listSubmitQuestionPage(@RequestBody SubmitQuestionQueryRequest submitQuestionPageRequest,
+                                                                       HttpServletRequest request) {
+
+        if (submitQuestionPageRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        submitQuestionPageRequest.setSortField("createTime");
+        User loginUser = userService.getLoginUser(request);
+        submitQuestionPageRequest.setUserId(loginUser.getId());
+        long current = submitQuestionPageRequest.getCurrent();
+        long size = submitQuestionPageRequest.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+
+        Page<SubmitQuestion> questionPage = submitQuestionService.page(new Page<>(current, size),
+                submitQuestionService.getQueryWrapper(submitQuestionPageRequest));
+
+        return ResultUtils.success(submitQuestionService.getSubmitQuestionVOPage(questionPage,loginUser));
+    }
+
 
 }

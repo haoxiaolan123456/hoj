@@ -23,9 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 提交题目接口
  */
-@RestController
-@RequestMapping("/submit_question")
-@Slf4j
 public class SubmitQuestionController {
 
     @Resource
@@ -41,7 +38,9 @@ public class SubmitQuestionController {
      * @param request
      * @return
      */
-    @PostMapping("/")
+
+
+ /*   @PostMapping("/")
     public BaseResponse<Long> SubmitQuestion(@RequestBody SubmitQuestionRequest submitQuestionRequest,
                                          HttpServletRequest request) {
         if (submitQuestionRequest == null || submitQuestionRequest.getQuestionId() <= 0) {
@@ -71,7 +70,6 @@ public class SubmitQuestionController {
                 submitQuestionService.getQueryWrapper(submitQuestionPageRequest));
 
         return ResultUtils.success(submitQuestionService.getSubmitQuestionVOPage(questionPage,loginUser));
-    }
-
+    }*/
 
 }

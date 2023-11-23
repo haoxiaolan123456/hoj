@@ -59,6 +59,7 @@ public interface UserService extends IService<User> {
      * 获取当前登录用户（允许未登录）
      *
      * @param request
+     *
      * @return
      */
     User getLoginUserPermitNull(HttpServletRequest request);
@@ -118,4 +119,5 @@ public interface UserService extends IService<User> {
      */
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
+    boolean saveUser(User user);
 }

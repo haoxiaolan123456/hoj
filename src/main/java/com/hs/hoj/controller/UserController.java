@@ -168,7 +168,7 @@ public class UserController {
         }
         User user = new User();
         BeanUtils.copyProperties(userAddRequest, user);
-        boolean result = userService.save(user);
+        boolean result = userService.saveUser(user);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(user.getId());
     }
@@ -231,7 +231,6 @@ public class UserController {
 
     /**
      * 根据 id 获取包装类
-     *
      * @param id
      * @param request
      * @return
@@ -245,7 +244,6 @@ public class UserController {
 
     /**
      * 分页获取用户列表（仅管理员）
-     *
      * @param userQueryRequest
      * @param request
      * @return
